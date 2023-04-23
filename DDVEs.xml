@@ -13,6 +13,18 @@
 	</DDVE>	
 	<DDVE>
 		<Name>DDVE98</Name>
+		<Ip>127.0.0.1</Ip>
+		<Cluster>SPT-Cluster</Cluster>
+		<DeployOption>8TB</DeployOption>
+		<VLAN>VM Network (1084)</VLAN>
+		<IpProtocol>IPv4</IpProtocol>
+		<IpAllocation>dhcpPolicy</IpAllocation>
+		<ExtraGbDisk>250</ExtraGbDisk>
+		<DiskFormat>Thin</DiskFormat>
+		<Include>true</Include>
+	</DDVE>	
+	<DDVE>
+		<Name>DDVE97</Name>
 		<Ip>192.168.0.102</Ip>
 		<Include>false</Include>
 	</DDVE>	
