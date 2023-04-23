@@ -1,0 +1,95 @@
+pipeline {
+    agent any
+    parameters {
+      choice choices: ['DDVE99', 'DDVE98', 'DDVE97', 'DDVE96'], name: 'Ddve_Name'
+    }
+    environment {
+      VMWARE_COMMON_CREDS = credentials('VMwareCreds')
+    }
+    stages {
+        stage('Check out') {
+            steps {
+                git url: 'https://github.com/DPSANZ23/dpsascode.git', branch: 'main'
+                echo 'Checkout source code from https://github.com/DPSANZ23/dpsascode repo'
+            }
+        }
+        stage('Begin DDVE build') {
+            steps {
+                echo 'Import DDVE OVA'
+                powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\DDVEs.xml"
+                $rc = $xmlfile.DDVEs.DDVE | Where-Object Name -eq ${env:Ddve_Name}
+                
+                if ($rc -ne $null) {
+                    $rc.Ip
+                    
+                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                    Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
+
+                    $vmSource = "C:\\Tmp\\ddve-7.11.0.0-1035502.ova"
+                    $vmCluster = Get-Cluster -Name $rc.Cluster
+                    $vmHost = ($vmCluster | Get-VMHost)[0]
+                    $vmDatastore = Get-Datastore -Name CSC-UserVMs
+                    $ovfConfig = Get-OvfConfiguration -Ovf $vmSource
+                    $ovfConfig.DeploymentOption.Value = $rc.DeployOption
+                    $ovfConfig.IpAssignment.IpProtocol.Value = $rc.IpProtocol
+                    # $ovfConfig.IpAssignment.IpAllocationPolicy.Value = "fixedPolicy"
+                    $ovfConfig.IpAssignment.IpAllocationPolicy.Value = $rc.IpAllocation
+                    $ovfConfig.NetworkMapping.VM_Network_1.Value = "VM Network (1084)"
+                    $vmName = $env:Ddve_Name
+                    $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
+
+                    Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
+                }
+                ''')
+            }
+        }
+        stage('Add disk to DDVE') {
+            steps {
+                echo 'Add more capacity to DDVE'
+                    powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\DDVEs.xml"
+                $rc = $xmlfile.DDVEs.DDVE | Where-Object Name -eq ${env:Ddve_Name}
+                
+                if ($rc -ne $null) {
+                    $rc.Ip
+                    
+                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                    Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
+
+                    $vmCluster = Get-Cluster -Name $rc.Cluster
+                    $vmHost = ($vmCluster | Get-VMHost)[0]
+                    $vmDatastore = Get-Datastore -Name CSC-UserVMs
+                    $vmName = $env:Ddve_Name
+
+                    New-HardDisk -VM $vmName -CapacityGB 250 -Datastore $vmDatastore -StorageFormat Thin -Persistence "Persistent" -Controller "SCSI Controller 0"
+
+                    Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
+                }
+                ''')
+            }
+        }
+        stage('DDVE is now ready') {
+            steps {
+                echo 'Powering Up DDVE'
+                powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\DDVEs.xml"
+                $rc = $xmlfile.DDVEs.DDVE | Where-Object Name -eq ${env:Ddve_Name}
+                
+                if ($rc -ne $null) {
+                    $rc.Ip
+                    
+                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                    Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
+
+                    Get-VM | where-object {$_.PowerState –eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false -RunAsync
+
+                    Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
+                }
+                ''')
+            }
+        }
+    }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}
