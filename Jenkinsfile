@@ -79,7 +79,7 @@ pipeline {
                     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
                     Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
 
-                    Get-VM | where-object {$_.PowerState –eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false -RunAsync
+                    Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false -RunAsync
 
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                 }
