@@ -104,7 +104,9 @@ pipeline {
                 ''')
             }
         }
-        stage('PPDM is now ready') {
+        stage('PPDM and DDVE are now ready') {
+           parallel {
+      stage('PPDM is now ready') {
             steps {
                 echo 'Powering Up PPDM'
                 powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\PPDMs.xml"
@@ -120,7 +122,7 @@ pipeline {
                 }
                 ''')
             }
-        }        
+        } 
         stage('DDVE is now ready') {
             steps {
                 echo 'Powering Up DDVE'
@@ -139,6 +141,9 @@ pipeline {
                 }
                 ''')
             }
+        }
+
+           }
         }
     }
     post { 
