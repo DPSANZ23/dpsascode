@@ -80,7 +80,7 @@ pipeline {
                     Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
 
                     Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false 
-                    // -RunAsync
+                    ## -RunAsync
                     $Ddve_Ip = (Get-VM $env:Ddve_Name).Guest.IPAddress[0]
                     Write-Host "`nTo proceed with DDVE configuration, please visit https://$($Ddve_Ip)`n"
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
