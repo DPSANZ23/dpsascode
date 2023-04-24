@@ -30,8 +30,8 @@ pipeline {
                     $vmDatastore = Get-Datastore -Name CSC-UserVMs
                     $ovfConfig = Get-OvfConfiguration -Ovf $vmSource
                     $ovfConfig.DeploymentOption.Value = $rc.DeployOption
-			  $ovfConfig.vami.brs.ip0.value = $rc.Ip
-			  $ovfConfig.vami.brs.gateway.value = $rc.Gateway
+	            $ovfConfig.vami.brs.ip0.value = $rc.Ip
+	            $ovfConfig.vami.brs.gateway.value = $rc.Gateway
                     $ovfConfig.vami.brs.netmask0.value = $rc.Mask
                     $ovfConfig.vami.brs.DNS.value = $rc.Dns
                     $ovfConfig.vami.brs.fqdn.value = $rc.Fqdn
