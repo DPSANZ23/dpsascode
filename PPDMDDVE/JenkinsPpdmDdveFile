@@ -41,7 +41,7 @@ pipeline {
                          $ovfConfig.IpAssignment.IpProtocol.Value = $rc.IpProtocol
                          $ovfConfig.NetworkMapping.VM_Network.Value = $rc.VLAN
                          $vmName = $env:PPDM_Name
-                         $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
+                         # $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
                          Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                          }
                       ''')
@@ -70,7 +70,7 @@ pipeline {
                          $ovfConfig.IpAssignment.IpAllocationPolicy.Value = $rc.IpAllocation
                          $ovfConfig.NetworkMapping.VM_Network_1.Value = "VM Network (1084)"
                          $vmName = $env:Ddve_Name
-                         $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
+                         # $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
 
                          Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                          }
@@ -97,7 +97,7 @@ pipeline {
                     $vmDatastore = Get-Datastore -Name CSC-UserVMs
                     $vmName = $env:Ddve_Name
 
-                    New-HardDisk -VM $vmName -CapacityGB 250 -Datastore $vmDatastore -StorageFormat Thin -Persistence "Persistent" -Controller "SCSI Controller 0"
+                    # New-HardDisk -VM $vmName -CapacityGB 250 -Datastore $vmDatastore -StorageFormat Thin -Persistence "Persistent" -Controller "SCSI Controller 0"
 
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                 }
@@ -117,7 +117,7 @@ pipeline {
                     
                     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
                     Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
-                    Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:PPDM_Name"} | Start-VM -Confirm:$false -RunAsync
+                    # Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:PPDM_Name"} | Start-VM -Confirm:$false -RunAsync
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                 }
                 ''')
@@ -135,7 +135,7 @@ pipeline {
                     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
                     Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
 
-                    Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false -RunAsync
+                    # Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false -RunAsync
 
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                 }
