@@ -98,46 +98,39 @@ pipeline {
         }  // stage
         stage('PPDM and DDVE are now ready') {
            parallel {
-      stage('PPDM is now ready') {
-            steps {
-                echo 'Powering Up PPDM'
-                powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\PPDMs.xml"
-                $rc = $xmlfile.PPDMs.PPDM | Where-Object Name -eq ${env:PPDM_Name}
+              stage('PPDM is now ready') {
+                 steps {
+                    echo 'Powering Up PPDM'
+                    powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\PPDMs.xml"
+                       $rc = $xmlfile.PPDMs.PPDM | Where-Object Name -eq ${env:PPDM_Name}
                 
-                if ($rc -ne $null) {
-                    $rc.Ip
-                    
-                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
-                    Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
-                    # Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:PPDM_Name"} | Start-VM -Confirm:$false -RunAsync
-                    Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
-                }
-                ''')
-            }
-        } 
-        stage('DDVE is now ready') {
-            steps {
-                echo 'Powering Up DDVE'
-                powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\DDVEs.xml"
-                $rc = $xmlfile.DDVEs.DDVE | Where-Object Name -eq ${env:Ddve_Name}
+                       if ($rc -ne $null) {
+                         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                         Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
+                         Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:PPDM_Name"} | Start-VM -Confirm:$false -RunAsync
+                         Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
+                         }
+                   ''')
+                }  // steps
+             }  // stage 
+             stage('DDVE is now ready') {
+                steps {
+                   echo 'Powering Up DDVE'
+                   powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\DDVEs.xml"
+                      $rc = $xmlfile.DDVEs.DDVE | Where-Object Name -eq ${env:Ddve_Name}
                 
-                if ($rc -ne $null) {
-                    $rc.Ip
-                    
-                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
-                    Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
-
-                    # Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false -RunAsync
-
-                    Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
-                }
-                ''')
-            }
-        }
-
-           }
-        }
-    }
+                      if ($rc -ne $null) {
+                         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                         Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
+                         Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false -RunAsync
+                         Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
+                         }
+                   ''')
+                }  // steps
+             }   // stage
+           }  // parallel
+        }  // stage
+    }  // stages
     post { 
         always { 
             cleanWs()
