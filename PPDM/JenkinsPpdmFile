@@ -38,7 +38,7 @@ pipeline {
                     $ovfConfig.IpAssignment.IpProtocol.Value = $rc.IpProtocol
                     $ovfConfig.NetworkMapping.VM_Network.Value = $rc.VLAN
                     $vmName = $env:PPDM_Name
-                    # $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
+                    $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                 }
                 ''')
@@ -52,7 +52,7 @@ pipeline {
                 if ($rc -ne $null) {
                     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
                     Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
-                    # Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:PPDM_Name"} | Start-VM -Confirm:$false -RunAsync
+                    Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:PPDM_Name"} | Start-VM -Confirm:$false -RunAsync
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
 		    Write-Host "`nTo proceed with PPDM configuration, please visit https://$($rc.Ip)`n"
                 }
