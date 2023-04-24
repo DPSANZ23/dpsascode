@@ -1,8 +1,8 @@
 pipeline {
     agent any
     parameters {
-      choice (choices: ['DDVE99', 'DDVE98', 'DDVE97', 'DDVE96'], name: 'Ddve_Name',
-      choices: ['PPDM99', 'PPDM98', 'PPDM97', 'PPDM96'], name: 'PPDM_Name' )
+      choice ( choices: ['DDVE99', 'DDVE98', 'DDVE97', 'DDVE96'], name: 'Ddve_Name' ),
+      choice ( choices: ['PPDM99', 'PPDM98', 'PPDM97', 'PPDM96'], name: 'PPDM_Name' )
     }
     environment {
       VMWARE_COMMON_CREDS = credentials('VMwareCreds')
