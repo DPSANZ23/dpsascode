@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    parameters {
+      choice choices: ['PPDM99', 'PPDM98', 'PPDM97', 'PPDM96'], name: 'PPDM_Name'
+    }
+    environment {
+      VMWARE_COMMON_CREDS = credentials('VMwareCreds')
+    }
+    stages {
+        stage('Check out') {
+            steps {
+                git url: 'https://github.com/DPSANZ23/dpsascode.git', branch: 'main'
+                echo 'Checkout source code from https://github.com/DPSANZ23/dpsascode repo'
+            }
+        }
+        stage('Begin PPDM build') {
+            steps {
+                echo 'Import PPDM OVA'
+                powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\PPDMs.xml"
+                $rc = $xmlfile.PPDMs.PPDM | Where-Object Name -eq ${env:PPDM_Name}
+                
+                if ($rc -ne $null) {
+                    $rc.Ip
+                    
+                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                    Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
+                    $vmSource = "C:\\Tmp\\dellemc-ppdm-sw-19.13.0-20.ova"
+                    $vmCluster = Get-Cluster -Name $rc.Cluster
+                    $vmHost = ($vmCluster | Get-VMHost)[1]
+                    $vmDatastore = Get-Datastore -Name CSC-UserVMs
+                    $ovfConfig = Get-OvfConfiguration -Ovf $vmSource
+                    $ovfConfig.DeploymentOption.Value = $rc.DeployOption
+			  $ovfConfig.vami.brs.ip0.value = $rc.Ip
+			  $ovfConfig.vami.brs.gateway.value = $rc.Gateway
+                    $ovfConfig.vami.brs.netmask0.value = $rc.Mask
+                    $ovfConfig.vami.brs.DNS.value = $rc.Dns
+                    $ovfConfig.vami.brs.fqdn.value = $rc.Fqdn
+                    $ovfConfig.IpAssignment.IpProtocol.Value = $rc.IpProtocol
+                    $ovfConfig.NetworkMapping.VM_Network.Value = $rc.VLAN
+                    $vmName = $env:PPDM_Name
+                    $vmHost | Import-vApp -Source $vmSource -OvfConfiguration $ovfConfig -Location $vmCluster -Datastore $vmDatastore -Name $vmName 
+                    Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
+                }
+                ''')
+            }
+        }
+        stage('PPDM is now ready') {
+            steps {
+                echo 'Powering Up PPDM'
+                powershell('''[XML]$xmlfile = Get-Content "$env:WORKSPACE\\PPDMs.xml"
+                $rc = $xmlfile.PPDMs.PPDM | Where-Object Name -eq ${env:PPDM_Name}
+                
+                if ($rc -ne $null) {
+                    $rc.Ip
+                    
+                    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 
+                    Connect-VIserver sydpocvc.syddsc.local -user $($ENV:VMWARE_COMMON_CREDS_USR) -password $($ENV:VMWARE_COMMON_CREDS_PSW) -warningaction 0
+                    Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:PPDM_Name"} | Start-VM -Confirm:$false -RunAsync
+                    Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
+                }
+                ''')
+            }
+        }
+    }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}
