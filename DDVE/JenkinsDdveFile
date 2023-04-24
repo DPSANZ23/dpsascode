@@ -82,6 +82,10 @@ pipeline {
                     Get-VM | where-object {$_.PowerState -eq "PoweredOff" -And $_.name -eq "$env:Ddve_Name"} | Start-VM -Confirm:$false 
                     ## -RunAsync
                     $Ddve_Ip = (Get-VM $env:Ddve_Name).Guest.IPAddress[0]
+                    while ($Ddve_Ip -eq $null) {
+                       Start-Sleep -Seconds 30
+                       $Ddve_Ip = (Get-VM $env:Ddve_Name).Guest.IPAddress[0]
+                    }
                     Write-Host "`nTo proceed with DDVE configuration, please visit https://$($Ddve_Ip)`n"
                     Disconnect-VIserver -server sydpocvc.syddsc.local -Confirm:$false
                 }
