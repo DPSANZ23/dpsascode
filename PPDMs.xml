@@ -1,0 +1,31 @@
+<PPDMs>
+	<PPDM>
+		<Name>PPDM99</Name>
+		<DeployOption>vmware</DeployOption>
+		<Ip>192.168.184.121</Ip>
+		<Gateway>192.168.184.1</Gateway>
+		<Mask>255.255.255.0</Mask>
+		<Dns>192.168.184.11, 192.168.200.16</Dns>
+		<Fqdn>ppdm99.dps.local</Fqdn>
+		<Cluster>SPT-Cluster</Cluster>
+		<VLAN>VM Network (1084)</VLAN>
+		<IpProtocol>IPv4</IpProtocol>
+	</PPDM>	
+	<PPDM>
+		<Name>PPDM98</Name>
+		<DeployOption>vmware</DeployOption>
+		<Ip>192.168.184.122</Ip>
+		<Gateway>192.168.184.1</Gateway>
+		<Mask>255.255.255.0</Mask>
+		<Dns>192.168.184.11, 192.168.200.16</Dns>
+		<Fqdn>ppdm99.dps.local</Fqdn>
+		<Cluster>SPT-Cluster</Cluster>
+		<VLAN>VM Network (1084)</VLAN>
+		<IpProtocol>IPv4</IpProtocol>
+	</PPDM>	
+	<PPDM>
+		<Name>PPDM97</Name>
+		<Ip>192.168.184.123</Ip>
+		<IpProtocol>IPv4</IpProtocol>
+	</PPDM>	
+</PPDMs>
